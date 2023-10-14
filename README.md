@@ -1,39 +1,33 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# phone_number_controller
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+[![pub](https://img.shields.io/pub/v/phone_number_controller?label=version)](https://pub.dev/packages/phone_number_controller)
+[![pub points](https://img.shields.io/pub/points/phone_number_controller)](https://pub.dev/packages/phone_number_controller/score)
+[![popularity](https://img.shields.io/pub/popularity/phone_number_controller)](https://pub.dev/packages/phone_number_controller/score)
+[![likes](https://img.shields.io/pub/likes/phone_number_controller)](https://pub.dev/packages/phone_number_controller/score)
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+This plugin provides a TextEditingController that formats international phone numbers
+as you type them.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Demo
 
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+(Coming soon)
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+Two steps:
+
+1. In a stateful widget, define a `PhoneNumberController`:
 
 ```dart
-const like = 'sample';
+final _controller = PhoneNumberController(countryCode: 'us');
 ```
 
-## Additional information
+2. When building the text field, specify the controller:
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```dart
+TextFormField(
+    controller: _controller,
+    keyboardType: TextInputType.phone,
+    ...
+);
+```
