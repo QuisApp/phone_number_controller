@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Add more comments.
+
 ## 1.0.3
 
 * Add comments.

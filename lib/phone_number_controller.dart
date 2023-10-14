@@ -128,12 +128,15 @@ void _maybePrint(String s) {
   // print(s);
 }
 
+/// Base class for Diff between two strings.
 @visibleForTesting
 abstract class Diff {}
 
+/// No diff between two strings.
 @visibleForTesting
 class NoDiff extends Diff {}
 
+/// The two strings differ by adding contiguous characters.
 @visibleForTesting
 class AddedChars extends Diff {
   final int offset;
@@ -156,6 +159,7 @@ class AddedChars extends Diff {
   int get hashCode => offset.hashCode ^ addedChars.hashCode;
 }
 
+/// The two strings differ by removing contiguous characters.
 @visibleForTesting
 class RemovedChars extends Diff {
   final int offset;
@@ -178,6 +182,7 @@ class RemovedChars extends Diff {
   int get hashCode => offset.hashCode ^ numChars.hashCode;
 }
 
+/// Infer the diff between two strings.
 @visibleForTesting
 Diff? inferDiff(String previous, String current) {
   if (previous == current) return NoDiff();
@@ -202,6 +207,7 @@ Diff? inferDiff(String previous, String current) {
   return null;
 }
 
+/// Infer the diff between two strings, with a hint about the cursor position.
 @visibleForTesting
 Diff? inferDiffWithCursorHint(String previous, String current, int cursor) {
   if (previous.length < current.length) {
@@ -229,6 +235,7 @@ Diff? inferDiffWithCursorHint(String previous, String current, int cursor) {
   return null;
 }
 
+/// Returns the longest common prefix between two strings.
 @visibleForTesting
 String longestCommonPrefix(String a, String b) {
   for (var i = 0; i < a.length && i < b.length; i++) {
@@ -243,6 +250,7 @@ String longestCommonPrefix(String a, String b) {
   }
 }
 
+/// Returns the longest common suffix between two strings.
 @visibleForTesting
 String longestCommonSuffix(String a, String b) {
   for (var i = 0; i < a.length && i < b.length; i++) {
@@ -257,6 +265,8 @@ String longestCommonSuffix(String a, String b) {
   }
 }
 
+/// Returns the set of indices of characters that were inserted between raw and
+/// formatted strings.
 @visibleForTesting
 Set<int>? computeInsertedChars(String raw, String formatted) {
   final insertedChars = <int>{};
@@ -281,6 +291,7 @@ Set<int>? computeInsertedChars(String raw, String formatted) {
   return insertedChars;
 }
 
+/// Returns the offset and number of characters to remove from the raw string.
 @visibleForTesting
 (int, int) computeRemovedCharsFromRaw(
     RemovedChars change, Set<int> insertedChars) {
