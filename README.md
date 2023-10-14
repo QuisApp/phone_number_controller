@@ -10,7 +10,7 @@ as you type them.
 
 ## Demo
 
-<img src="https://github.com/QuisApp/phone_number_controller/assets/80799804/57b40660-d094-4096-9542-758c4eb6b5a3" alt="demo" width="280"/>
+<img src="https://github.com/QuisApp/phone_number_controller/assets/80799804/686f8c5e-448a-44b6-9bc2-0a3538ab7588" alt="demo" width="280"/>
 
 ## Usage
 
