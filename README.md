@@ -10,7 +10,7 @@ as you type them.
 
 ## Demo
 
-(Coming soon)
+![demo](https://github.com/QuisApp/phone_number_controller/assets/80799804/bf290aa1-e637-49f4-b38b-3f250f268763)
 
 ## Usage
 
