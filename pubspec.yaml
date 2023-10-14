@@ -1,6 +1,6 @@
 name: phone_number_controller
 description: A TextEditingController formatting international phone numbers as you type them.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/QuisApp/phone_number_controller
 
 environment:
