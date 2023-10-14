@@ -124,7 +124,7 @@ class PhoneNumberController extends TextEditingController {
 }
 
 void _maybePrint(String s) {
-  print(s);
+  // print(s);
 }
 
 abstract class Diff {}
