@@ -124,7 +124,7 @@ class PhoneNumberController extends TextEditingController {
 }
 
 void _maybePrint(String s) {
-  // print(s);
+  print(s);
 }
 
 abstract class Diff {}
@@ -278,13 +278,16 @@ Set<int>? computeInsertedChars(String raw, String formatted) {
       .length;
   final insertedBeforeOffset =
       insertedChars.where((i) => i < change.offset).length;
+  _maybePrint('format: computeRemovedCharsFromRaw: '
+      'insertedToRemove = $insertedToRemove, '
+      'insertedBeforeOffset = $insertedBeforeOffset');
   // Special case: if all removed chars are inserted, we remove the character
   // before the offset instead.
   if (insertedToRemove == change.numChars) {
     if (change.offset == 0) {
       return (0, 0);
     }
-    return (change.offset - 1, 1);
+    return (change.offset - insertedBeforeOffset - 1, 1);
   }
   return (
     change.offset - insertedBeforeOffset,
