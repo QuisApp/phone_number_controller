@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libphonenumber/libphonenumber.dart';
 
+/// A [TextEditingController] that formats phone numbers as they are typed.
 class PhoneNumberController extends TextEditingController {
   final String countryCode;
 
@@ -127,10 +128,13 @@ void _maybePrint(String s) {
   // print(s);
 }
 
+@visibleForTesting
 abstract class Diff {}
 
+@visibleForTesting
 class NoDiff extends Diff {}
 
+@visibleForTesting
 class AddedChars extends Diff {
   final int offset;
   final String addedChars;
@@ -152,6 +156,7 @@ class AddedChars extends Diff {
   int get hashCode => offset.hashCode ^ addedChars.hashCode;
 }
 
+@visibleForTesting
 class RemovedChars extends Diff {
   final int offset;
   final int numChars;
@@ -173,6 +178,7 @@ class RemovedChars extends Diff {
   int get hashCode => offset.hashCode ^ numChars.hashCode;
 }
 
+@visibleForTesting
 Diff? inferDiff(String previous, String current) {
   if (previous == current) return NoDiff();
 
@@ -196,6 +202,7 @@ Diff? inferDiff(String previous, String current) {
   return null;
 }
 
+@visibleForTesting
 Diff? inferDiffWithCursorHint(String previous, String current, int cursor) {
   if (previous.length < current.length) {
     int numAdded = current.length - previous.length;
@@ -222,6 +229,7 @@ Diff? inferDiffWithCursorHint(String previous, String current, int cursor) {
   return null;
 }
 
+@visibleForTesting
 String longestCommonPrefix(String a, String b) {
   for (var i = 0; i < a.length && i < b.length; i++) {
     if (a[i] != b[i]) {
@@ -235,6 +243,7 @@ String longestCommonPrefix(String a, String b) {
   }
 }
 
+@visibleForTesting
 String longestCommonSuffix(String a, String b) {
   for (var i = 0; i < a.length && i < b.length; i++) {
     if (a[a.length - i - 1] != b[b.length - i - 1]) {
@@ -248,6 +257,7 @@ String longestCommonSuffix(String a, String b) {
   }
 }
 
+@visibleForTesting
 Set<int>? computeInsertedChars(String raw, String formatted) {
   final insertedChars = <int>{};
   var i = 0;
@@ -271,6 +281,7 @@ Set<int>? computeInsertedChars(String raw, String formatted) {
   return insertedChars;
 }
 
+@visibleForTesting
 (int, int) computeRemovedCharsFromRaw(
     RemovedChars change, Set<int> insertedChars) {
   final insertedToRemove = insertedChars
