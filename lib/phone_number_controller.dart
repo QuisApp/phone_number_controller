@@ -17,6 +17,12 @@ class PhoneNumberController extends TextEditingController {
     addListener(_format);
   }
 
+  @override
+  void dispose() {
+    removeListener(_format);
+    super.dispose();
+  }
+
   void _cancelFormat() {
     _resetFormat();
     _shouldFormat = false;
@@ -29,7 +35,7 @@ class PhoneNumberController extends TextEditingController {
     _insertedChars = {};
   }
 
-  void _format() async {
+  Future<void> _format() async {
     final current = text;
     if (current.isEmpty) {
       _resetFormat();
