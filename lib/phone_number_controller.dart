@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:libphonenumber/libphonenumber.dart';
+import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 
 /// A [TextEditingController] that formats phone numbers as they are typed.
 class PhoneNumberController extends TextEditingController {
@@ -11,7 +11,7 @@ class PhoneNumberController extends TextEditingController {
   Set<int> _insertedChars = {};
 
   PhoneNumberController({required this.countryCode, String? text})
-      : super(text: text) {
+    : super(text: text) {
     // TODO: also support format-as-you-type for existing numbers
     _shouldFormat = text == null || text.isEmpty;
     addListener(_format);
@@ -35,7 +35,7 @@ class PhoneNumberController extends TextEditingController {
     _insertedChars = {};
   }
 
-  Future<void> _format() async {
+  void _format() {
     final current = text;
     if (current.isEmpty) {
       _resetFormat();
@@ -49,10 +49,12 @@ class PhoneNumberController extends TextEditingController {
     }
 
     final cursor = selection.baseOffset;
-    final change = inferDiffWithCursorHint(_previous, current, cursor) ??
+    final change =
+        inferDiffWithCursorHint(_previous, current, cursor) ??
         inferDiff(_previous, current);
     _maybePrint(
-        'format: inferred change from `$_previous` to `$current`: $change');
+      'format: inferred change from `$_previous` to `$current`: $change',
+    );
 
     String newRaw = '';
     int? newCursor;
@@ -65,51 +67,117 @@ class PhoneNumberController extends TextEditingController {
       final offset = change.offset - _numInsertedBeforeOffset(change.offset);
       final suffix = _raw.substring(offset);
       newRaw = _raw.substring(0, offset) + change.addedChars + suffix;
-      if (suffix.isNotEmpty) {
-        desiredRawCursor = offset + change.addedChars.length;
-        _maybePrint('format: desiredRawCursor = $desiredRawCursor');
-      }
+      desiredRawCursor = offset + change.addedChars.length;
+      _maybePrint('format: desiredRawCursor = $desiredRawCursor');
     } else if (change is RemovedChars) {
-      final (offset, numToRemove) =
-          computeRemovedCharsFromRaw(change, _insertedChars);
+      final (offset, numToRemove) = computeRemovedCharsFromRaw(
+        change,
+        _insertedChars,
+      );
       final suffix = _raw.substring(offset + numToRemove);
       _maybePrint(
-          'format: computeRemovedCharsFromRaw with $change and $_insertedChars = ($offset, $numToRemove)');
+        'format: computeRemovedCharsFromRaw with $change and $_insertedChars = ($offset, $numToRemove)',
+      );
       newRaw = _raw.substring(0, offset) + suffix;
-      if (suffix.isNotEmpty) {
-        desiredRawCursor = offset;
-        _maybePrint('format: desiredRawCursor = $desiredRawCursor');
-      }
+      desiredRawCursor = offset;
+      _maybePrint('format: desiredRawCursor = $desiredRawCursor');
     } else {
       _maybePrint('format: cancel format because change is null');
       _cancelFormat();
       return;
     }
 
-    final newPrevious = await PhoneNumberUtil.formatAsYouType(
-        phoneNumber: newRaw, isoCode: countryCode);
-    if (newPrevious == null) {
-      _maybePrint('format: cancel format because newPrevious is null');
-      _cancelFormat();
-      return;
-    }
-    final newInsertedChars = computeInsertedChars(newRaw, newPrevious);
-    if (newInsertedChars == null) {
-      _maybePrint('format: cancel format because newInsertedChars is null');
-      _cancelFormat();
-      return;
-    }
-    if (desiredRawCursor != null) {
-      var i = 0;
-      var j = 0;
-      while (j < desiredRawCursor) {
-        if (!newInsertedChars.contains(i)) {
-          j++;
+    String? newPrevious;
+    try {
+      if (newRaw.startsWith('+')) {
+        // International number - wait until we have at least a country code (2+ chars after +)
+        if (newRaw.length < 3) {
+          newPrevious = newRaw;
+        } else {
+          try {
+            final phoneNumber = PhoneNumber.parse(newRaw);
+            final formattedNsn = phoneNumber.formatNsn();
+            _maybePrint(
+              'format: formatNsn() returned: "$formattedNsn" (newRaw: "$newRaw", countryCode: ${phoneNumber.countryCode})',
+            );
+
+            if (formattedNsn.isEmpty) {
+              newPrevious = newRaw;
+            } else {
+              newPrevious = '+${phoneNumber.countryCode} $formattedNsn';
+              _maybePrint('format: final formatted: "$newPrevious"');
+            }
+          } catch (e) {
+            if (e.toString().contains('country calling code not found')) {
+              _maybePrint(
+                'format: incomplete international number, keeping raw: $e',
+              );
+              newPrevious = newRaw;
+            } else {
+              rethrow;
+            }
+          }
         }
-        i++;
+      } else {
+        // Local number - use formatNsn() with caller country
+        final isoCode = IsoCode.values.firstWhere(
+          (code) => code.name.toLowerCase() == countryCode.toLowerCase(),
+          orElse: () => IsoCode.US,
+        );
+        final phoneNumber = PhoneNumber.parse(newRaw, callerCountry: isoCode);
+        newPrevious = phoneNumber.formatNsn();
+        _maybePrint(
+          'format: formatNsn() returned: "$newPrevious" (raw: "$newRaw", isoCode: ${isoCode.name})',
+        );
+        if (newPrevious.isEmpty) {
+          _maybePrint('format: formatNsn() returned empty, keeping raw input');
+          newPrevious = newRaw;
+        }
       }
-      newCursor = i;
+    } catch (e) {
+      if (e.toString().contains('country calling code not found')) {
+        _maybePrint('format: incomplete international number, keeping raw: $e');
+        newPrevious = newRaw;
+      } else {
+        _maybePrint('format: cancel format because parsing failed: $e');
+        _cancelFormat();
+        return;
+      }
     }
+    if (newPrevious.isEmpty) {
+      _maybePrint('format: cancel format because newPrevious is empty');
+      _cancelFormat();
+      return;
+    }
+    Set<int> newInsertedChars;
+    final computed = computeInsertedChars(newRaw, newPrevious);
+    if (computed == null) {
+      // If computeInsertedChars returns null, it means the formatted string is shorter than raw
+      // This can happen with international numbers where formatNsn() returns only the national number
+      // In this case, keep the raw input instead of canceling
+      if (newRaw.startsWith('+')) {
+        _maybePrint(
+          'format: incomplete international number, keeping raw input (newRaw="$newRaw", newPrevious="$newPrevious")',
+        );
+        newPrevious = newRaw;
+        newInsertedChars = {};
+      } else {
+        _maybePrint('format: cancel format because newInsertedChars is null');
+        _cancelFormat();
+        return;
+      }
+    } else {
+      newInsertedChars = computed;
+    }
+    var i = 0;
+    var j = 0;
+    while (j < desiredRawCursor && i < newPrevious.length) {
+      if (!newInsertedChars.contains(i)) {
+        j++;
+      }
+      i++;
+    }
+    newCursor = i.clamp(0, newPrevious.length);
     _maybePrint('format:');
     _maybePrint('  -> newRaw: $newRaw');
     _maybePrint('  -> newPrevious: $newPrevious');
@@ -120,9 +188,7 @@ class PhoneNumberController extends TextEditingController {
     _insertedChars = newInsertedChars;
 
     text = newPrevious;
-    if (newCursor != null) {
-      selection = TextSelection.fromPosition(TextPosition(offset: newCursor));
-    }
+    selection = TextSelection.fromPosition(TextPosition(offset: newCursor));
   }
 
   int _numInsertedBeforeOffset(int offset) {
@@ -195,13 +261,17 @@ Diff? inferDiff(String previous, String current) {
 
   String prefix = longestCommonPrefix(previous, current);
   String suffix = longestCommonSuffix(
-      previous.substring(prefix.length), current.substring(prefix.length));
+    previous.substring(prefix.length),
+    current.substring(prefix.length),
+  );
 
   if (prefix + suffix == previous) {
     return AddedChars(
       offset: prefix.length,
-      addedChars:
-          current.substring(prefix.length, current.length - suffix.length),
+      addedChars: current.substring(
+        prefix.length,
+        current.length - suffix.length,
+      ),
     );
   } else if (prefix + suffix == current) {
     return RemovedChars(
@@ -221,10 +291,14 @@ Diff? inferDiffWithCursorHint(String previous, String current, int cursor) {
     int offset = cursor - numAdded;
     if (offset >= 0 &&
         current.substring(0, offset) + current.substring(cursor) == previous) {
-      _maybePrint('inferDiffWithCursorHint: AddedChars(offset: $offset, '
-          'addedChars: ${current.substring(offset, cursor)})');
+      _maybePrint(
+        'inferDiffWithCursorHint: AddedChars(offset: $offset, '
+        'addedChars: ${current.substring(offset, cursor)})',
+      );
       return AddedChars(
-          offset: offset, addedChars: current.substring(offset, cursor));
+        offset: offset,
+        addedChars: current.substring(offset, cursor),
+      );
     }
   } else if (previous.length > current.length) {
     int numRemoved = previous.length - current.length;
@@ -232,8 +306,10 @@ Diff? inferDiffWithCursorHint(String previous, String current, int cursor) {
     if (endOffset <= previous.length &&
         previous.substring(0, cursor) + previous.substring(endOffset) ==
             current) {
-      _maybePrint('inferDiffWithCursorHint: RemovedChars(offset: $cursor, '
-          'numChars: $numRemoved)');
+      _maybePrint(
+        'inferDiffWithCursorHint: RemovedChars(offset: $cursor, '
+        'numChars: $numRemoved)',
+      );
       return RemovedChars(offset: cursor, numChars: numRemoved);
     }
   }
@@ -300,15 +376,20 @@ Set<int>? computeInsertedChars(String raw, String formatted) {
 /// Returns the offset and number of characters to remove from the raw string.
 @visibleForTesting
 (int, int) computeRemovedCharsFromRaw(
-    RemovedChars change, Set<int> insertedChars) {
+  RemovedChars change,
+  Set<int> insertedChars,
+) {
   final insertedToRemove = insertedChars
       .where((i) => i >= change.offset && i < change.offset + change.numChars)
       .length;
-  final insertedBeforeOffset =
-      insertedChars.where((i) => i < change.offset).length;
-  _maybePrint('format: computeRemovedCharsFromRaw: '
-      'insertedToRemove = $insertedToRemove, '
-      'insertedBeforeOffset = $insertedBeforeOffset');
+  final insertedBeforeOffset = insertedChars
+      .where((i) => i < change.offset)
+      .length;
+  _maybePrint(
+    'format: computeRemovedCharsFromRaw: '
+    'insertedToRemove = $insertedToRemove, '
+    'insertedBeforeOffset = $insertedBeforeOffset',
+  );
   // Special case: if all removed chars are inserted, we remove the character
   // before the offset instead.
   if (insertedToRemove == change.numChars) {
@@ -319,6 +400,6 @@ Set<int>? computeInsertedChars(String raw, String formatted) {
   }
   return (
     change.offset - insertedBeforeOffset,
-    change.numChars - insertedToRemove
+    change.numChars - insertedToRemove,
   );
 }

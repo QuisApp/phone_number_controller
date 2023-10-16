@@ -60,8 +60,10 @@ void main() {
       });
 
       test('prefix and suffix overlapping', () {
-        expect(inferDiff('123-5', '123-55'),
-            AddedChars(offset: 5, addedChars: '5'));
+        expect(
+          inferDiff('123-5', '123-55'),
+          AddedChars(offset: 5, addedChars: '5'),
+        );
       });
     });
 
@@ -105,55 +107,73 @@ void main() {
     group('computeRemovedCharsFromRaw', () {
       test('starting with 0', () {
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 0, numChars: 3), {}),
-            (0, 3));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 0, numChars: 3), {}),
+          (0, 3),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 0, numChars: 3), {1}),
-            (0, 2));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 0, numChars: 3), {1}),
+          (0, 2),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 0, numChars: 3), {1, 2}),
-            (0, 1));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 0, numChars: 3), {
+            1,
+            2,
+          }),
+          (0, 1),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 0, numChars: 3), {1, 4}),
-            (0, 2));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 0, numChars: 3), {
+            1,
+            4,
+          }),
+          (0, 2),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 0, numChars: 3), {4, 5}),
-            (0, 3));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 0, numChars: 3), {
+            4,
+            5,
+          }),
+          (0, 3),
+        );
       });
 
       test('starting with 1', () {
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 1, numChars: 3), {}),
-            (1, 3));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 1, numChars: 3), {}),
+          (1, 3),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 1, numChars: 3), {0}),
-            (0, 3));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 1, numChars: 3), {0}),
+          (0, 3),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 1, numChars: 3), {0, 1}),
-            (0, 2));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 1, numChars: 3), {
+            0,
+            1,
+          }),
+          (0, 2),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 1, numChars: 3), {1, 4}),
-            (1, 2));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 1, numChars: 3), {
+            1,
+            4,
+          }),
+          (1, 2),
+        );
       });
 
       test('special case', () {
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 1, numChars: 1), {1, 4}),
-            (0, 1));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 1, numChars: 1), {
+            1,
+            4,
+          }),
+          (0, 1),
+        );
         expect(
-            computeRemovedCharsFromRaw(
-                RemovedChars(offset: 3, numChars: 1), {3}),
-            (2, 1));
+          computeRemovedCharsFromRaw(RemovedChars(offset: 3, numChars: 1), {3}),
+          (2, 1),
+        );
       });
     });
   });

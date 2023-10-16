@@ -18,7 +18,7 @@ class MainApp extends StatelessWidget {
 }
 
 class PhoneNumberControllerPage extends StatefulWidget {
-  const PhoneNumberControllerPage({Key? key}) : super(key: key);
+  const PhoneNumberControllerPage({super.key});
 
   @override
   PhoneNumberControllerPageState createState() =>
@@ -33,18 +33,19 @@ class PhoneNumberControllerPageState extends State<PhoneNumberControllerPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('PhoneNumberController example')),
       body: Center(
-          child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextFormField(
-          controller: _controller,
-          keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(
-            labelText: 'Phone number',
-            hintText: 'Enter phone number',
-            border: OutlineInputBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            controller: _controller,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Phone number',
+              hintText: 'Enter phone number',
+              border: OutlineInputBorder(),
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
 }
